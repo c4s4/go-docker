@@ -13,7 +13,11 @@ build: clean # Build go binary for docker
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.Version=$(VERSION) -s -f" -o $(BUILD_DIR)/go-docker .
 
 docker: build # Build docker image
-	docker build -t casa/go-docker .
+	if [ `uname -m` = "x86_64" ]; then \
+		docker build -t casa/go-docker .; \
+	else \
+		docker buildx build --platform=linux/amd64 -t casa/go-docker .; \
+	fi
 
 run: docker # Run docker image
 	docker run -p 8080:8080 casa/go-docker
