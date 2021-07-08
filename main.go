@@ -3,16 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"runtime"
 )
 
 func setupHandler() *http.ServeMux {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/hello", func(response http.ResponseWriter, request *http.Request) {
-		name := request.URL.Query().Get("name")
-		if name == "" {
-			name = "World"
-		}
-		fmt.Fprintf(response, "Hello %s!", name)
+		fmt.Fprintf(response, "Hello from %s/%s!", runtime.GOOS, runtime.GOARCH)
 	})
 	return handler
 }

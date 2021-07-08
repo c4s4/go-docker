@@ -1,30 +1,26 @@
-# Parent makefile for Golang (https://github.com/c4s4/make)
-
 BUILD_DIR = build
-VERSION = 1.0.0
+GOOS = linux
+GOARCH = amd64
+IMAGE = casa/go-docker
 
-clean: # Clean generated files and test cache
+clean: # Clean generated files and caches
 	rm -rf $(BUILD_DIR)
-	go clean -testcache
 	go clean -cache
+	go clean -testcache
 
 build: clean # Build go binary for docker
 	mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.Version=$(VERSION) -s -f" -o $(BUILD_DIR)/go-docker .
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -a -installsuffix cgo -ldflags "-s -f" -o $(BUILD_DIR)/go-docker .
 
 docker: build # Build docker image
-	if [ `uname -m` = "x86_64" ]; then \
-		docker build -t casa/go-docker .; \
-	else \
-		docker buildx build --platform=linux/amd64 -t casa/go-docker .; \
-	fi
+	docker buildx build --platform=$(GOOS)/$(GOARCH) -t $(IMAGE) .
 
 run: docker # Run docker image
-	docker run -p 8080:8080 casa/go-docker
+	docker run -p 8080:8080 $(IMAGE)
 
 client: # Run a client
 	curl http://localhost:8080/hello
 
 size: # Print image and binary sizes
-	@docker inspect casa/go-docker | grep '"Size":'
+	@docker inspect $(IMAGE) | grep '"Size":'
 	@ls -l build/go-docker
