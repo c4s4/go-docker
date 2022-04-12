@@ -10,7 +10,7 @@ clean: # Clean generated files and caches
 
 build: clean # Build go binary for docker
 	mkdir -p $(BUILD_DIR)
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "-w -s" -o $(BUILD_DIR)/go-docker .
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(BUILD_DIR) -ldflags="-w -s -extldflags '-static'" ./...
 
 docker: build # Build docker image
 	docker buildx build --platform=$(GOOS)/$(GOARCH) -t $(IMAGE) .
